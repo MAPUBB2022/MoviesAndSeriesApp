@@ -3,24 +3,26 @@ package Model;
 import java.util.List;
 
 public class User {
-    private int id;
+    private String id;
 private String firstName;
 private String lastName;
+private String password;
 private List<Order> orders;
 
-    public User(int id, String firstName, String lastName, List<Order> orders) {
-        this.id=id;
+    public User(String id, String firstName, String lastName, String password, List<Order> orders) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.password = password;
         this.orders = orders;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(String id) {
+        this.id = String.valueOf(id);
     }
 
     public String getFirstName() {
@@ -37,6 +39,14 @@ private List<Order> orders;
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public List<Order> getOrders() {

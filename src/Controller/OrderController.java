@@ -11,52 +11,32 @@ import java.util.Objects;
 
 import Controller.ItemController;
 import Controller.UserController;
+import Repository.IUserRepository;
 
 public class OrderController {
-    private List<Order> orders;
-    private UserController usersc;
-    private ItemController itemsc;
+    private IUserRepository userRepo;
 
-    public OrderController(List<Order> orders, UserController usersc, ItemController itemsc) {
-        this.orders = orders;
-        this.usersc = usersc;
-        this.itemsc = itemsc;
+    public OrderController(IUserRepository userRepo) {
+        this.userRepo = userRepo;
     }
 
     public List<Order> getOrders() {
+        List<Order> orders = new ArrayList<>();
+        for (User u : userRepo.getAll())
+            for (Order o : u.getOrders())
+                if (!orders.contains(o))
+                    orders.add(o);
         return orders;
     }
 
-    public UserController getUsersc() {
-        return usersc;
-    }
-
-    public ItemController getItemsc() {
-        return itemsc;
-    }
-
-    public void addOrder(String firstname, String lastname, List<String> l) {
-        User u = null;
-        for (User x : usersc.getUsers())
-        {
-            if (Objects.equals(x.getFirstName(), firstname) && Objects.equals(x.getLastName(), lastname))
-                u = x;
-        }
+    public void addOrder(String userId, LocalDateTime orderDate, List<Item> items) {
+        User u = userRepo.find(userId);
         if (u == null)
-            throw new RuntimeException("Invalid firstname/lastname");
-        List<Item> orderedItems = new ArrayList<>();
-        for (String title : l)
-        {
-            for (Item i : itemsc.getItems())
-            {
-                if (Objects.equals(i.getTitle(), title))
-                {
-                    orderedItems.add(i);
-                }
-            }
-        }
-        Order no = new Order(LocalDateTime.now(), orderedItems);
-        u.getOrders().add(no);
-        orders.add(no);
+            return;
+        u.getOrders().add(new Order(orderDate, items));
+    }
+
+    public void addUser(String id, String firstname, String lastname, String password, List<Order> order){
+        userRepo.add(new User(id, firstname, lastname, password, order));
     }
 }
