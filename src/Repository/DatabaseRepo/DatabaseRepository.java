@@ -3,6 +3,7 @@ import Model.*;
 
 import Repository.IUserRepository;
 
+import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +14,10 @@ public class DatabaseRepository implements IUserRepository {
     private List<User> allUsers = new ArrayList<>();
     private List<Movies> allMovies = new ArrayList<>();
     private List<Series> allSeries = new ArrayList<>();
+
+    private List<Movies> predefinedMovies = new ArrayList<>();
+
+    private List<Series> predefinedSeries = new ArrayList<>();
 
 
     @Override
@@ -33,7 +38,7 @@ public class DatabaseRepository implements IUserRepository {
 
     }
 
-    @Override
+    @Override//gaseste userul in functie de id
     public User find(String id) {
         for (User u : allUsers) {
             if (u.getId().equals(id))
@@ -54,9 +59,18 @@ public class DatabaseRepository implements IUserRepository {
         return new ArrayList<>(allSeries);
     }
 
-    public void store(Connection connection) throws SQLException
-    {
+    @Override
+    public List<Movies> getPredefinedMovies() {
+        return predefinedMovies;
+    }
 
+    @Override
+    public List<Series> getPredefinedSeries() {
+        return predefinedSeries;
+    }
+
+    public void store(Connection connection) throws SQLException//aici adaugam in baza de date
+    {
         PreparedStatement stUser = connection.prepareStatement("INSERT INTO User(username, firstname, lastname, password) VALUES (?, ?, ?, ?)");
         PreparedStatement stMovie = connection.prepareStatement("INSERT INTO Movies(username, orderdate, title, rating, year, duration, budget) VALUES (?, ?, ?, ?, ?, ?, ?)");
         PreparedStatement stSeries = connection.prepareStatement("INSERT INTO Series(username, orderdate, title, rating, year, nrOfEpisodes) VALUES (?, ?, ?, ?, ?, ?)");
@@ -92,9 +106,30 @@ public class DatabaseRepository implements IUserRepository {
                 }
             }
         }
+        PreparedStatement stNewMovie = connection.prepareStatement("INSERT INTO allMovies(title, rating, year, duration, budget) VALUES (?, ?, ?, ?, ?)");
+        PreparedStatement stNewSeries = connection.prepareStatement("INSERT INTO allSeries(title, rating, year, nrOfEpisodes) VALUES (?, ?, ?, ?)");
+
+        for (Movies pm : predefinedMovies)
+        {
+            stNewMovie.setString(1, pm.getTitle());
+            stNewMovie.setDouble(2, pm.getRating());
+            stNewMovie.setInt(3, pm.getJahr());
+            stNewMovie.setInt(4, pm.getDuration());
+            stNewMovie.setDouble(5, pm.getBudget());
+            stNewMovie.executeUpdate();
+        }
+
+        for (Series ps : predefinedSeries)
+        {
+            stNewSeries.setString(1, ps.getTitle());
+            stNewSeries.setDouble(2, ps.getRating());
+            stNewSeries.setInt(3, ps.getJahr());
+            stNewSeries.setInt(4, ps.getNumberOfEpisodes());
+            stNewSeries.executeUpdate();
+        }
     }
 
-    public void load(Connection connection) throws SQLException {
+    public void load(Connection connection) throws SQLException {//aici scoatem din baza de date
         try(Statement queryUser = connection.createStatement(); Statement queryMS = connection.createStatement();) {
             try (ResultSet res = queryUser.executeQuery("SELECT * FROM User")){
                 while(res.next()){
@@ -155,6 +190,34 @@ public class DatabaseRepository implements IUserRepository {
                         }
                     }
                     allUsers.add(new User(username, firstname, lastname, password, orders));
+                }
+            }
+        }
+        predefinedMovies.clear();
+        predefinedSeries.clear();
+        try (Statement queryPredefined = connection.createStatement())
+        {
+            try (ResultSet res = queryPredefined.executeQuery("SELECT * FROM allMovies"))
+            {
+                while (res.next())
+                {
+                    String title = res.getString("title");
+                    double rating = res.getDouble("rating");
+                    int year = res.getInt("year");
+                    int duration = res.getInt("duration");
+                    double budget = res.getDouble("budget");
+                    predefinedMovies.add(new Movies(title, rating, year, duration, budget));
+                }
+            }
+            try (ResultSet res = queryPredefined.executeQuery("SELECT * FROM allSeries"))
+            {
+                while (res.next())
+                {
+                    String title = res.getString("title");
+                    double rating = res.getDouble("rating");
+                    int year = res.getInt("year");
+                    int nrOfEpisodes = res.getInt("nrOfEpisodes");
+                    predefinedSeries.add(new Series(title, rating, year, nrOfEpisodes));
                 }
             }
         }

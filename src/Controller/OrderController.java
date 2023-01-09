@@ -36,7 +36,4 @@ public class OrderController {
         u.getOrders().add(new Order(orderDate, items));
     }
 
-    public void addUser(String id, String firstname, String lastname, String password, List<Order> order){
-        userRepo.add(new User(id, firstname, lastname, password, order));
-    }
 }

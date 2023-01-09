@@ -33,6 +33,26 @@ public class UserController {
         return userRepo.getAllSeries();
     }
 
+    public Movies getPredefinedMovie(String title)
+    {
+        for (Movies movie : userRepo.getPredefinedMovies())
+        {
+            if (movie.getTitle().equals(title))
+                return movie;
+        }
+        return null;
+    }
+
+    public Series getPredefinedSeries(String title)
+    {
+        for (Series series : userRepo.getPredefinedSeries())
+        {
+            if (series.getTitle().equals(title))
+                return series;
+        }
+        return null;
+    }
+
     public User FindUserByIDAndPassword(String id, String password){
         for (User u : userRepo.getAll())
             if (u.getId().equals(id) && u.getPassword().equals(password))
@@ -40,4 +60,7 @@ public class UserController {
         return null;
     }
 
+    public void addUser(String id, String firstname, String lastname, String password, List<Order> order){
+        userRepo.add(new User(id, firstname, lastname, password, order));
+    }
 }

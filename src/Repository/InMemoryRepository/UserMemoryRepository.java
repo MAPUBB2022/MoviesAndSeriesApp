@@ -53,4 +53,14 @@ public class UserMemoryRepository implements IUserRepository {
     public List<Series> getAllSeries() {
         return new ArrayList<>(allSeries);
     }
+
+    @Override
+    public List<Movies> getPredefinedMovies() {
+        return null;
+    }
+
+    @Override
+    public List<Series> getPredefinedSeries() {
+        return null;
+    }
 }

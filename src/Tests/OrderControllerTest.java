@@ -32,10 +32,7 @@ class OrderControllerTest {
 
         List<User> users = new ArrayList<>();
         UserController uc = new UserController(new UserMemoryRepository());
-       // ItemController items = new ItemController();
-        //OrderController oc = new OrderController(iniOr,uc, items);
-        /*oc.addOrder("Talpa", "Adrian", orderList);
-        System.out.println(iniOr.get(4));*/
+
 
     }
 }

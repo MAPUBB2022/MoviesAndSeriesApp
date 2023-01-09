@@ -3,7 +3,6 @@ import Controller.OrderController;
 import Controller.UserController;
 import Repository.DatabaseRepo.DatabaseRepository;
 import View.View;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,11 +17,8 @@ public class Main {
         UserController uc = new UserController(dbRepo);
         ItemController ic = new ItemController(dbRepo);
         OrderController oc = new OrderController(dbRepo);
-
         View v = new View(ic, oc, uc);
-
         v.console();
-
         Statement stWipe = connection.createStatement();
         stWipe.execute("DELETE FROM User");
         stWipe.execute("DELETE FROM Movies");

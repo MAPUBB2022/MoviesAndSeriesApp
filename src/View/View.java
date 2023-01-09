@@ -3,6 +3,7 @@ package View;
 import Controller.ItemController;
 import Controller.OrderController;
 import Controller.UserController;
+import Exceptions.CustomException;
 import Model.*;
 import Repository.InMemoryRepository.UserMemoryRepository;
 
@@ -70,11 +71,11 @@ public class View implements ViewInterface{
     }
     public void printAllItems()
     {
-        printItemList(itemController.getItems());
+        printItemList(itemController.getPredefinedItems());
     }
     public void printAllMovies()
     {
-        for (Movies m : userController.getMovies())
+        for (Movies m : itemController.getPredefinedMovies())
         {
             System.out.print("Title: ");
             System.out.println(m.getTitle());
@@ -92,7 +93,7 @@ public class View implements ViewInterface{
     }
     public void printAllSeries()
     {
-        for (Series s : itemController.getSeries())
+        for (Series s : itemController.getPredefinedSeries())
         {
             System.out.print("Title: ");
             System.out.println(s.getTitle());
@@ -119,40 +120,44 @@ public class View implements ViewInterface{
                 break;
             System.out.println("Title:");
             String title = in.nextLine();
-            System.out.println("Rating:");
-            double rating = Double.parseDouble(in.nextLine());
-            System.out.println("Year:");
-            int year = Integer.parseInt(in.nextLine());
             if (option.equals("movie"))
             {
-                System.out.println("Duration:");
-                int duration = Integer.parseInt(in.nextLine());
-                System.out.println("Budget:");
-                double budget = Double.parseDouble(in.nextLine());
-                items.add(new Movies(title, rating, year, duration, budget));
+                Movies movies = userController.getPredefinedMovie(title);
+                if (movies == null)
+                {
+                    System.out.println("Movie doesn't exist.");
+                    continue;
+                }
+                items.add(movies);
             }
             else
             {
-                System.out.println("Number of episodes:");
-                int nrOfEpisodes = Integer.parseInt(in.nextLine());
-                items.add(new Series(title, rating, year, nrOfEpisodes));
+                Series series = userController.getPredefinedSeries(title);
+                if (series == null)
+                {
+                    System.out.println("Series doesn't exist.");
+                    continue;
+                }
+                items.add(series);
             }
         }
         orderController.addOrder(username, LocalDateTime.now(), items);
     }
 
-    public void signup(){
+    public void signup()//add new user
+    {
         Scanner in = new Scanner(System.in);
         System.out.println("Username:");
         String username = in.nextLine();
+        {
+            for (User u: userController.getUsers())
             {
-                for (User u: userController.getUsers()) {
-                    if (u.getId().equals(username))
-                    {
-                        System.out.println("This username is already taken! Please try a new one!");
-                        System.out.println("Username:");
-                        username = in.nextLine();
-                    }
+                if (u.getId().equals(username))
+                {
+                    System.out.println("This username is already taken! Please try a new one!");
+                    System.out.println("Username:");
+                    username = in.nextLine();
+                }
             }
         }
         System.out.println("FirstName:");
@@ -162,8 +167,38 @@ public class View implements ViewInterface{
         System.out.println("Password:");
         String password = in.nextLine();
         List<Order> order = new ArrayList<>();
-        orderController.addUser(username, firstname, lastname, password, order);
+        userController.addUser(username, firstname, lastname, password, order);
     }
+
+    public void addMovie()
+    {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Title:");
+        String title = in.nextLine();
+        System.out.println("Rating:");
+        double rating = in.nextDouble();
+        System.out.println("Year:");
+        int year = in.nextInt();
+        System.out.println("Duration:");
+        int duration = in.nextInt();
+        System.out.println("Budget:");
+        double budget = in.nextDouble();
+        itemController.addMovie(title, rating, year, duration, budget);
+    }
+    public void addSeries()
+    {
+        Scanner in = new Scanner(System.in);
+        System.out.println("Title:");
+        String title = in.nextLine();
+        System.out.println("Rating:");
+        double rating = in.nextDouble();
+        System.out.println("Year:");
+        int year = in.nextInt();
+        System.out.println("Number Of Episodes:");
+        int nrOfEps = in.nextInt();
+        itemController.addSeries(title, rating, year, nrOfEps);
+    }
+
     public void printMoviesSortedByRating()
     {
         List<Movies> mov = itemController.getMoviesSortedByRating();
@@ -209,41 +244,8 @@ public class View implements ViewInterface{
         System.out.println(m.getBudget());
     }
 
-    public void printMenu()
-    {
-            String ANSI_YELLOW = "\u001B[33m";
-            String ANSI_RESET = "\u001B[0m";
-            System.out.println(ANSI_YELLOW +
-                    "____    __    ____  _______  __        ______   ______   .___  ___.  _______    .___________.  ______   \n" +
-                    "\\   \\  /  \\  /   / |   ____||  |      /      | /  __  \\  |   \\/   | |   ____|   |           | /  __  \\  \n" +
-                    " \\   \\/    \\/   /  |  |__   |  |     |  ,----'|  |  |  | |  \\  /  | |  |__      `---|  |----`|  |  |  | \n" +
-                    "  \\            /   |   __|  |  |     |  |     |  |  |  | |  |\\/|  | |   __|         |  |     |  |  |  | \n" +
-                    "   \\    /    /    |  |____ |  `----.|  `----.|  `--'  | |  |  |  | |  |____          |  |     |  `--'  | \n" +
-                    "    \\__/  \\__/     |_______||_______| \\______| \\______/  |__|  |__| |_______|       |__|      \\______/  \n" +
-                    "                     .___  ___.   ______   ____    ____  __   _______      _______.                     \n" +
-                    "                     |   \\/   |  /  __  \\  \\   \\  /   / |  | |   ____|    /       |                     \n" +
-                    "                     |  \\  /  | |  |  |  |  \\   \\/   /  |  | |  |__      |   (----`                     \n" +
-                    "                     |  |\\/|  | |  |  |  |   \\      /   |  | |   __|      \\   \\                         \n" +
-                    "                     |  |  |  | |  `--'  |    \\    /    |  | |  |____ .----)   |                        \n" +
-                    "                     |__|  |__|  \\______/      \\__/     |__| |_______||_______/                         \n" +
-                    "                             ___      .__   __.  _______                                                \n" +
-                    "                            /   \\     |  \\ |  | |       \\                                               \n" +
-                    "                           /  ^  \\    |   \\|  | |  .--.  |                                              \n" +
-                    "                          /  /_\\  \\   |  . `  | |  |  |  |                                              \n" +
-                    "                         /  _____  \\  |  |\\   | |  '--'  |                                              \n" +
-                    "                        /__/     \\__\\ |__| \\__| |_______/                                               \n" +
-                    "                    _______. _______ .______       __   _______      _______.                           \n" +
-                    "                   /       ||   ____||   _  \\     |  | |   ____|    /       |                           \n" +
-                    "                  |   (----`|  |__   |  |_)  |    |  | |  |__      |   (----`                           \n" +
-                    "                   \\   \\    |   __|  |      /     |  | |   __|      \\   \\                               \n" +
-                    "               .----)   |   |  |____ |  |\\  \\----.|  | |  |____ .----)   |                              \n" +
-                    "               |_______/    |_______|| _| `._____||__| |_______||_______/  " +
-                    ANSI_RESET);
+    public void printUIPicture(){
 
-        System.out.println();
-        System.out.println("1)Print all users\n2) Print all orders!\n3) Print all items!\n4) Print all movies!\n5) Print all series!\n6) Print movies (by rating)\n7) Print longest series!\n8) Print highest budget movie!\n9) Add order!\n10)Exit");
-    }
-    public void printMenu2(){
         String ANSI_YELLOW = "\u001B[33m";
         String ANSI_RESET = "\u001B[0m";
         System.out.println(ANSI_YELLOW +
@@ -274,6 +276,40 @@ public class View implements ViewInterface{
                 ANSI_RESET);
 
         System.out.println();
+    };
+
+    public void printInvalidPicture()
+    {
+        String ANSI_YELLOW = "\u001B[32m";
+        String ANSI_RESET = "\u001B[0m";
+        System.out.println(ANSI_YELLOW +
+                "        .--'''''''''--.\n" +
+                "     .'      .---.      '.\n" +
+                "    /    .-----------.    \\\n" +
+                "   /        .-----.        \\\n" +
+                "   |       .-.   .-.       |\n" +
+                "   |      /   \\ /   \\      |\n" +
+                "    \\    | .-. | .-. |    /\n" +
+                "     '-._| | | | | | |_.-'\n" +
+                "         | '-' | '-' |\n" +
+                "          \\___/ \\___/\n" +
+                "       _.-'  /   \\  `-._\n" +
+                "     .' _.--|     |--._ '.\n" +
+                "     ' _...-|     |-..._ '\n" +
+                "            |     |\n" +
+                "            '.___.'\n" +
+                "              | |\n" +
+                "             _| |_\n" +
+                "            /\\( )/\\\n" +
+                "           /  ` '  \\" + ANSI_RESET);
+    }
+    public void printAdminMenu()
+    {
+        printUIPicture();
+        System.out.println("1)Print all users\n2) Print all orders!\n3) Print all items!\n4) Print all movies!\n5) Print all series!\n6) Print movies (by rating)\n7) Print longest series!\n8) Print highest budget movie!\n9) Add order!\n10)Add New Movie!\n11)Add New Series!\n12)Exit");
+    }
+    public void printUserMenu(){
+        printUIPicture();
         System.out.println("1) Print all items!\n2) Print all movies!\n3) Print all series!\n4) Print movies (by rating)\n5) Print longest series!\n6) Print highest budget movie!\n7) Add order!\n8)Exit");
     }
     public int login(){
@@ -292,40 +328,16 @@ public class View implements ViewInterface{
             id = username.nextLine();
             System.out.print("Password: ");
             pass = password.nextLine();
-            if (userController.FindUserByIDAndPassword(String.valueOf(id), pass) != null){
-                printMenu();
+            //avem un sigur admin:
+            if (id.equals("admin") && pass.equals("admin")) {
+                printAdminMenu();
                 return 1;
             }
-            else{
-                System.out.println("Invalid username or password!");
-                System.out.println();
-                String ANSI_YELLOW = "\u001B[32m";
-                String ANSI_RESET = "\u001B[0m";
-                System.out.println(ANSI_YELLOW +
-                        "        .--'''''''''--.\n" +
-                        "     .'      .---.      '.\n" +
-                        "    /    .-----------.    \\\n" +
-                        "   /        .-----.        \\\n" +
-                        "   |       .-.   .-.       |\n" +
-                        "   |      /   \\ /   \\      |\n" +
-                        "    \\    | .-. | .-. |    /\n" +
-                        "     '-._| | | | | | |_.-'\n" +
-                        "         | '-' | '-' |\n" +
-                        "          \\___/ \\___/\n" +
-                        "       _.-'  /   \\  `-._\n" +
-                        "     .' _.--|     |--._ '.\n" +
-                        "     ' _...-|     |-..._ '\n" +
-                        "            |     |\n" +
-                        "            '.___.'\n" +
-                        "              | |\n" +
-                        "             _| |_\n" +
-                        "            /\\( )/\\\n" +
-                        "           /  ` '  \\" + ANSI_RESET);
-
-                return 0;
+            else{//daca contul adminului e gresit
+                printInvalidPicture();
+                throw new CustomException("Invalid Admin Account!");
             }
         }
-
         else
         if (option == 2){
             String id;
@@ -337,34 +349,12 @@ public class View implements ViewInterface{
             System.out.print("Password: ");
             pass = password.nextLine();
             if (userController.FindUserByIDAndPassword(String.valueOf(id), pass) != null){
-                printMenu2();
+                printUserMenu();
                 return 2;
             }
             else{
                 System.out.println("Invalid username or password!");
-                System.out.println();
-                String ANSI_YELLOW = "\u001B[32m";
-                String ANSI_RESET = "\u001B[0m";
-                System.out.println(ANSI_YELLOW +
-                        "        .--'''''''''--.\n" +
-                        "     .'      .---.      '.\n" +
-                        "    /    .-----------.    \\\n" +
-                        "   /        .-----.        \\\n" +
-                        "   |       .-.   .-.       |\n" +
-                        "   |      /   \\ /   \\      |\n" +
-                        "    \\    | .-. | .-. |    /\n" +
-                        "     '-._| | | | | | |_.-'\n" +
-                        "         | '-' | '-' |\n" +
-                        "          \\___/ \\___/\n" +
-                        "       _.-'  /   \\  `-._\n" +
-                        "     .' _.--|     |--._ '.\n" +
-                        "     ' _...-|     |-..._ '\n" +
-                        "            |     |\n" +
-                        "            '.___.'\n" +
-                        "              | |\n" +
-                        "             _| |_\n" +
-                        "            /\\( )/\\\n" +
-                        "           /  ` '  \\" + ANSI_RESET);
+                printInvalidPicture();
                 return 0;
             }
         }
@@ -375,6 +365,7 @@ public class View implements ViewInterface{
             }
         else{
             System.out.println("Invalid option!");
+            printInvalidPicture();
             return 0;
         }
     }
@@ -382,6 +373,7 @@ public class View implements ViewInterface{
        int x = login();
        if (x == 0)
            return;
+
        if(x == 1){
         while (true)
         {
@@ -435,6 +427,14 @@ public class View implements ViewInterface{
                     break;
                 }
                 case 10: {
+                    addMovie();
+                    break;
+                }
+                case 11:{
+                    addSeries();
+                    break;
+                }
+                case 12: {
                     return;
                 }
                 default: {

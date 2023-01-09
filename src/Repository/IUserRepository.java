@@ -14,4 +14,8 @@ public interface IUserRepository extends ICrudRepository<String, User>{
     List<User> getAll();
     List<Movies> getAllMovies();
     List<Series> getAllSeries();
+
+    List<Movies> getPredefinedMovies();
+
+    List<Series> getPredefinedSeries();
 }
